@@ -1,62 +1,41 @@
 const express = require('express');
-const mysql = require('mysql');
+const admin = require('firebase-admin');
 const app = express();
 
-// Configuración de la conexión a la base de datos
-const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root',
-  password: 'Hollowknight123,.',
-  database: 'unitas',
+// Configurar el SDK de administración de Firebase
+const serviceAccount = require('./webformunitas-firebase-adminsdk-e05sb-0892f8f00d.json');
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
 });
 
-// Conexión a la base de datos
-connection.connect((error) => {
-  if (error) {
-    console.error('Error al conectar a la base de datos:', error);
-  } else {
-    console.log('Conexión exitosa a la base de datos');
-  }
-});
+// Crear una instancia de Firestore
+const db = admin.firestore();
 
 // Configurar middleware para analizar los datos del formulario
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-//Ruta para permitir solicitudes CORS
-app.use((req, res, next) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  next();
-});
-
-app.options('/formulario', (req, res) => {
-  res.setHeader('Access-Control-Allow-Origin', 'http://localhost:3000');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-  res.sendStatus(200);
-});
-
 // Ruta para recibir los datos del formulario
-app.post('/formulario', (req, res) => {
+app.post('/', (req, res) => {
   const formData = req.body;
 
-  // Aquí puedes realizar la lógica para insertar los datos en la base de datos
-  // Por ejemplo:
-  connection.query('INSERT INTO tabla_ong SET ?', formData, (error, results) => {
-    if (error) {
-      console.error('Error al insertar los datos:', error);
-      res.status(500).send('Error al procesar la solicitud');
-    } else {
+  // Insertar los datos en la base de datos
+  const collectionRef = db.collection('tabla_ong'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
+  collectionRef
+    .add(formData)
+    .then(() => {
       console.log('Datos insertados exitosamente en la base de datos');
       res.status(200).send('Datos insertados exitosamente');
-    }
-  });
+    })
+    .catch((error) => {
+      console.error('Error al insertar los datos:', error);
+      res.status(500).send('Error al procesar la solicitud');
+    });
 });
 
 // Iniciar el servidor
-const port = 4000;
+const port = process.env.PORT || 4000;
 app.listen(port, () => {
   console.log(`Servidor backend iniciado en http://localhost:${port}`);
 });
