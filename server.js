@@ -16,6 +16,13 @@ const db = admin.firestore();
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
+// Configurar encabezados CORS
+app.use(function(req, res, next) {
+  res.header('Access-Control-Allow-Origin', 'https://webformunitas.netlify.app');
+  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+  next();
+});
+
 // Ruta para recibir los datos del formulario
 app.post('/', (req, res) => {
   const formData = req.body;
