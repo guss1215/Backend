@@ -21,7 +21,7 @@ app.post('/', (req, res) => {
   const formData = req.body;
 
   // Insertar los datos en la base de datos
-  const collectionRef = db.collection('tabla_ong'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
+  const collectionRef = db.collection('unitasform'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
   collectionRef
     .add(formData)
     .then(() => {
