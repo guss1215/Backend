@@ -17,7 +17,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Configurar encabezados CORS
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
   res.header('Access-Control-Allow-Origin', 'https://webformunitas.netlify.app');
   res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
   next();
@@ -40,6 +40,36 @@ app.post('/', (req, res) => {
       res.status(500).send('Error al procesar la solicitud');
     });
 });
+
+// Ruta para buscar los datos en la base de datos
+// Ruta para buscar los datos en la base de datos
+app.get('/buscar', (req, res) => {
+  const { institutionName } = req.query;
+
+  // Realizar la búsqueda en la base de datos utilizando institutionName
+  const collectionRef = db.collection('unitasform'); // Reemplaza 'unitasform' con el nombre de tu colección en Firestore
+  const query = collectionRef.where('institutionName', '==', institutionName).limit(1);
+
+  query
+    .get()
+    .then((snapshot) => {
+      let searchResults = {};
+
+      if (!snapshot.empty) {
+        snapshot.forEach((doc) => {
+          searchResults = doc.data();
+        });
+      }
+
+      res.json(searchResults);
+    })
+    .catch((error) => {
+      console.error('Error al buscar los datos:', error);
+      res.status(500).send('Error al procesar la solicitud');
+    });
+});
+
+
 
 // Iniciar el servidor
 const port = process.env.PORT || 4000;
