@@ -50,7 +50,17 @@ app.post('/', (req, res) => {
   const documentRef = collectionRef.doc(formData.institutionName); // Utiliza institutionName como ID del documento
 
   documentRef
-    .set(formData, { merge: true }) // Utiliza merge: true para fusionar los datos existentes con los nuevos
+    .get()
+    .then((doc) => {
+      if (doc.exists) {
+        const existingData = doc.data();
+        const combinedData = { ...existingData, ...formData };
+
+        return documentRef.set(combinedData);
+      } else {
+        return documentRef.set(formData);
+      }
+    })
     .then(() => {
       console.log('Datos insertados o actualizados exitosamente en la base de datos');
       res.status(200).send('Datos insertados o actualizados exitosamente');
