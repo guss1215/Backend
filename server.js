@@ -24,22 +24,43 @@ app.use(function (req, res, next) {
 });
 
 // Ruta para recibir los datos del formulario
+//app.post('/', (req, res) => {
+//  const formData = req.body;
+//
+//  // Insertar los datos en la base de datos
+//  const collectionRef = db.collection('unitasform'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
+//  collectionRef
+//    .add(formData)
+//    .then(() => {
+//      console.log('Datos insertados exitosamente en la base de datos');
+//      res.status(200).send('Datos insertados exitosamente');
+//    })
+//    .catch((error) => {
+//      console.error('Error al insertar los datos:', error);
+//      res.status(500).send('Error al procesar la solicitud');
+//    });
+//});
+
+// Ruta para recibir los datos del formulario
 app.post('/', (req, res) => {
   const formData = req.body;
 
-  // Insertar los datos en la base de datos
-  const collectionRef = db.collection('unitasform'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
-  collectionRef
-    .add(formData)
+  // Insertar o actualizar los datos en la base de datos
+  const collectionRef = db.collection('unitasform');
+  const documentRef = collectionRef.doc(formData.institutionName); // Utiliza institutionName como ID del documento
+
+  documentRef
+    .set(formData, { merge: true }) // Utiliza merge: true para fusionar los datos existentes con los nuevos
     .then(() => {
-      console.log('Datos insertados exitosamente en la base de datos');
-      res.status(200).send('Datos insertados exitosamente');
+      console.log('Datos insertados o actualizados exitosamente en la base de datos');
+      res.status(200).send('Datos insertados o actualizados exitosamente');
     })
     .catch((error) => {
-      console.error('Error al insertar los datos:', error);
+      console.error('Error al insertar o actualizar los datos:', error);
       res.status(500).send('Error al procesar la solicitud');
     });
 });
+
 
 // Ruta para buscar los datos en la base de datos
 // Ruta para buscar los datos en la base de datos
