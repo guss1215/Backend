@@ -1,6 +1,8 @@
 const express = require('express');
 const admin = require('firebase-admin');
 const app = express();
+const cors = require('cors');
+
 
 // Configurar el SDK de administración de Firebase
 const serviceAccount = require('./webformunitas-firebase-adminsdk-e05sb-0892f8f00d.json');
@@ -17,11 +19,18 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 // Configurar encabezados CORS
-app.use(function (req, res, next) {
-  res.header('Access-Control-Allow-Origin', 'https://webformunitas.netlify.app');
-  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-  next();
-});
+//app.use(function (req, res, next) {
+//  res.header('Access-Control-Allow-Origin', 'https://webformunitas.netlify.app');
+//  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
+//  next();
+//});
+
+app.use(cors({
+  origin: 'https://webformunitas.netlify.app',
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
+
 
 // Ruta para recibir los datos del formulario
 app.post('/', (req, res) => {
