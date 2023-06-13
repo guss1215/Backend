@@ -2,6 +2,7 @@ const express = require('express');
 const admin = require('firebase-admin');
 const app = express();
 const cors = require('cors');
+const bcrypt = require('bcrypt');
 
 
 // Configurar el SDK de administración de Firebase
@@ -92,24 +93,35 @@ app.get('/buscar', (req, res) => {
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
 
-  // Verificar las credenciales en Firebase
-  admin
-    .auth()
-    .getUserByEmail(username)
-    .then((userRecord) => {
-      // Comparar la contraseña proporcionada con la almacenada en Firebase
-      return admin.auth().comparePasswords(password, userRecord.passwordHash);
-    })
-    .then(() => {
-      // Credenciales válidas, generar el token de sesión
-      return admin.auth().createCustomToken(username);
-    })
-    .then((customToken) => {
-      res.status(200).json({ token: customToken });
+  // Buscar el usuario en la base de datos utilizando el nombre de usuario (username)
+  const collectionRef = db.collection('unitasform');
+  const query = collectionRef.where('username', '==', username).limit(1);
+
+  query
+    .get()
+    .then((snapshot) => {
+      if (!snapshot.empty) {
+        snapshot.forEach((doc) => {
+          const user = doc.data();
+
+          // Comparar la contraseña proporcionada con la almacenada en la base de datos
+          bcrypt.compare(password, user.password, (error, result) => {
+            if (result) {
+              // Contraseña válida, generar el token de sesión
+              // ...
+              res.status(200).json({ token: 'YOUR_CUSTOM_TOKEN' });
+            } else {
+              res.status(401).json({ error: 'Credenciales inválidas' });
+            }
+          });
+        });
+      } else {
+        res.status(401).json({ error: 'Credenciales inválidas' });
+      }
     })
     .catch((error) => {
       console.error('Error al iniciar sesión:', error);
-      res.status(401).json({ error: 'Credenciales inválidas' });
+      res.status(500).json({ error: 'Error al procesar la solicitud' });
     });
 });
 
