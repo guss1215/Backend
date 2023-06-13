@@ -24,24 +24,6 @@ app.use(function (req, res, next) {
 });
 
 // Ruta para recibir los datos del formulario
-//app.post('/', (req, res) => {
-//  const formData = req.body;
-//
-//  // Insertar los datos en la base de datos
-//  const collectionRef = db.collection('unitasform'); // Reemplaza 'tabla_ong' con el nombre de tu colección en Firestore
-//  collectionRef
-//    .add(formData)
-//    .then(() => {
-//      console.log('Datos insertados exitosamente en la base de datos');
-//      res.status(200).send('Datos insertados exitosamente');
-//    })
-//    .catch((error) => {
-//      console.error('Error al insertar los datos:', error);
-//      res.status(500).send('Error al procesar la solicitud');
-//    });
-//});
-
-// Ruta para recibir los datos del formulario
 app.post('/', (req, res) => {
   const formData = req.body;
 
@@ -71,8 +53,6 @@ app.post('/', (req, res) => {
     });
 });
 
-
-// Ruta para buscar los datos en la base de datos
 // Ruta para buscar los datos en la base de datos
 app.get('/buscar', (req, res) => {
   const { institutionName } = req.query;
@@ -97,6 +77,30 @@ app.get('/buscar', (req, res) => {
     .catch((error) => {
       console.error('Error al buscar los datos:', error);
       res.status(500).send('Error al procesar la solicitud');
+    });
+});
+
+app.post('/login', (req, res) => {
+  const { username, password } = req.body;
+
+  // Verificar las credenciales en Firebase
+  admin
+    .auth()
+    .getUserByEmail(username)
+    .then((userRecord) => {
+      // Comparar la contraseña proporcionada con la almacenada en Firebase
+      return admin.auth().comparePasswords(password, userRecord.passwordHash);
+    })
+    .then(() => {
+      // Credenciales válidas, generar el token de sesión
+      return admin.auth().createCustomToken(username);
+    })
+    .then((customToken) => {
+      res.status(200).json({ token: customToken });
+    })
+    .catch((error) => {
+      console.error('Error al iniciar sesión:', error);
+      res.status(401).json({ error: 'Credenciales inválidas' });
     });
 });
 
