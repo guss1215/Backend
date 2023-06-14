@@ -3,6 +3,7 @@ const admin = require('firebase-admin');
 const app = express();
 const cors = require('cors');
 const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
 
 
 // Configurar el SDK de administración de Firebase
@@ -18,13 +19,6 @@ const db = admin.firestore();
 // Configurar middleware para analizar los datos del formulario
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
-// Configurar encabezados CORS
-//app.use(function (req, res, next) {
-//  res.header('Access-Control-Allow-Origin', 'https://webformunitas.netlify.app');
-//  res.header('Access-Control-Allow-Headers', 'Origin, X-Requested-With, Content-Type, Accept');
-//  next();
-//});
 
 app.use(cors({
   origin: 'https://webformunitas.netlify.app',
@@ -92,6 +86,15 @@ app.get('/buscar', (req, res) => {
 
 app.post('/login', (req, res) => {
   const { username, password } = req.body;
+  const pass = 'padma';
+
+  bcrypt.hash(pass, 10, (error, hash) => {
+  if (error) {
+    console.error('Error al generar el hash:', error);
+  } else {
+    console.log('Hash de la contraseña:', hash);
+  }
+});
 
   // Buscar el usuario en la base de datos utilizando el nombre de usuario (username)
   const collectionRef = db.collection('unitasform');
@@ -106,10 +109,12 @@ app.post('/login', (req, res) => {
 
           // Comparar la contraseña proporcionada con la almacenada en la base de datos
           bcrypt.compare(password, user.password, (error, result) => {
+            console.log(error + ' ' + result);
             if (result) {
               // Contraseña válida, generar el token de sesión
-              // ...
-              res.status(200).json({ token: 'YOUR_CUSTOM_TOKEN' });
+              const token = jwt.sign({ username: user.username }, 'secretKey');
+              console.log(token);
+              res.status(200).json({ token });
             } else {
               res.status(401).json({ error: 'Credenciales inválidas' });
             }
