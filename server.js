@@ -112,7 +112,7 @@ app.post('/login', (req, res) => {
             console.log(error + ' ' + result);
             if (result) {
               // Contraseña válida, generar el token de sesión
-              const token = jwt.sign({ username: user.username }, 'secretKey');
+              const token = jwt.sign({ username: user.username, role: user.role }, 'secretKey');
               console.log(token);
               res.status(200).json({ token });
             } else {
